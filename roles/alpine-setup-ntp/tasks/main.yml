@@ -1,0 +1,13 @@
+# Configure and start busybox ntpd
+
+- name: Start service ntpd, if not started
+  ansible.builtin.service:
+    name: ntpd
+    state: started
+
+- name: Enable service ntpd, and not touch the state
+  ansible.builtin.service:
+    name: ntpd 
+    enabled: yes
+
+

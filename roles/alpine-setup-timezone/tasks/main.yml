@@ -1,0 +1,39 @@
+# Setup timezone 
+#
+- name: Create necessary directories if not present
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  loop:
+    - /etc/zoneinfo
+
+- name: Register status of required timezone file
+  stat:
+    path: "/etc/zoneinfo/{{ timezone }}"
+  register: timezonefile_path
+
+- name: Change timezone if necessary
+  when: "not timezonefile_path.stat.exists"
+  block:
+    - name: Install tzdata 
+      ansible.builtin.package:
+        name: tzdata 
+        state: present
+
+    - name: Set timezone
+      community.general.timezone:
+        name: "{{ timezone }}"  
+
+    - name: Restart crond (recommended)
+      ansible.builtin.service:
+        name: crond
+        state: restarted
+
+#- name: De-install tzdata 
+#  ignore_errors: true
+#  ansible.builtin.package:
+#    name: tzdata 
+#    state: absent

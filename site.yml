@@ -1,0 +1,28 @@
+---
+# This playbook installs ansible in diskless mode on harddisk on all sites
+
+- name: Setup Alpine on harddisk (please edit config.yml first!) 
+  hosts: all
+  become: yes 
+    #remote_user: root
+
+  roles:
+    # Replacement of alpine-setup:
+    - alpine-setup-keymap
+    - alpine-setup-hostname
+    #- alpine-setup-interfaces
+    - alpine-start-networking
+    - alpine-setup-timezone
+    #- alpine-setup-apkrepos
+    #- alpine-setup-users
+    - alpine-setup-sshd
+    - alpine-setup-ntp
+    #- alpine-setup-disk
+    #- alpine-setup-lbu
+    #- alpine-setup-apkcache
+    # === Sound setup ===
+    - alpine-alsa-install 
+    - alpine-enable-community-repo
+    #- refind-download
+    #- refind-knoppix-entries
+    #- refind-efi-setup

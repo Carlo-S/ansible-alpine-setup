@@ -1,0 +1,77 @@
+# Setup keymap with kbd-layout and kbd-variant
+#
+# if a file /etc/conf.d/loadkmap exists, we assume that setup already done
+#
+# loadkeymap looks like this:
+#    KEYMAP=/etc/keymap/de-nodeadkeys.bmap.gz
+#                       ^                    
+#                       variant
+# and the file referenced must also exist
+#
+# But we will first do it the simple (and not optimized) way.
+# TODO:
+#    - Check if files exist and skip if yes
+#    - If they do not exist, install kbd-bkeymaps only temporary, copy necessary files
+#      and remove kbd-bkeymaps afterwards
+#
+- name: Create necessary directories if not present
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  loop:
+    - /etc/keymap
+    - /etc/conf.d
+
+- name: Set required status of loadkmap service to started (not yet restarted)
+  ansible.builtin.set_fact:
+    loadkmap_status: started
+
+- name: Register status of required keymapfile
+  stat:
+    path: "/etc/keymap/{{ kbd_variant }}.bmap.gz"
+  register: keymapfile_path
+
+- name: Install keymap if not present
+  when: "not keymapfile_path.stat.exists"
+  block:
+    - name: Install kbd-bkeymaps
+      ansible.builtin.package:
+        name: kbd-bkeymaps 
+        state: present
+
+    - name: Copy keymap file
+      ansible.builtin.copy:
+        src: "/usr/share/bkeymaps/{{ kbd_layout }}/{{ kbd_variant }}.bmap.gz" 
+        dest: "/etc/keymap/{{ kbd_variant }}.bmap.gz"
+        remote_src: yes
+
+- name: De-install kbd-bkeymaps
+  ansible.builtin.package:
+    name: kbd-bkeymaps
+    state: absent
+
+- name: Ensure loadkmap contains correct entry
+  ansible.builtin.lineinfile:
+    path: /etc/conf.d/loadkmap
+    regexp: '^KEYMAP='
+    line: "KEYMAP=/etc/keymap/{{ kbd_variant }}.bmap.gz"
+  register: loadkmap_result
+
+- name: Set required status of service to restart if loadkmap changed
+  when: loadkmap_result.changed
+  ansible.builtin.set_fact:
+    loadkmap_status: restarted
+
+- name: Start or restart service loadkmap
+  ansible.builtin.service:
+    name: loadkmap
+    state: "{{ loadkmap_status }}" 
+
+- name: Enable service loadkmap, and not touch the state
+  ansible.builtin.service:
+    name: loadkmap
+    runlevel: boot
+    enabled: yes

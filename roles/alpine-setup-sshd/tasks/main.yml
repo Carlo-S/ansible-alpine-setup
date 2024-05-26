@@ -1,0 +1,25 @@
+# Setup sshd
+- name: Define ssh deamon name standard
+  ansible.builtin.set_fact:
+    ssh_service: sshd
+
+- name: Install ssh package
+  ansible.builtin.package:
+    name: "{{ ssh_package }}"
+    state: present
+
+- name: dropbear service is dropbear 
+  when: ssh_package == "dropbear"
+  ansible.builtin.set_fact:
+    ssh_service: dropbear
+
+- name: Start or restart service loadkmap
+  ansible.builtin.service:
+    name: "{{ ssh_service }}" 
+    state: started 
+
+- name: Enable service loadkmap, and not touch the state
+  ansible.builtin.service:
+    name: "{{ ssh_service }}"
+    runlevel: default
+    enabled: yes

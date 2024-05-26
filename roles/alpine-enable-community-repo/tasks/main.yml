@@ -1,0 +1,9 @@
+# Enable community repo
+- name: Enable community repo
+  lineinfile:
+      dest: /etc/apk/repositories
+      regexp: "^# (http.*/alpine/.*/community)"
+      line: '\1'
+      backrefs: true
+      firstmatch: true
+

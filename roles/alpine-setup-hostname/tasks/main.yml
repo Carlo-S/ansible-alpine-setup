@@ -1,0 +1,6 @@
+# Setup hostname 
+#
+- name: Set ansible hostname
+  ansible.builtin.hostname:
+    name: "{{ hostname }}"
+    use: "alpine"

@@ -1,0 +1,24 @@
+knoppix_version: 9.3
+kernel_version: 5.16.12
+efi_disk: sda
+efi_pnum: 1
+boot_disk: sda
+boot_pnum: 5
+boot_type: reiserfs
+conf_disk: sda
+conf_pnum: 6
+
+kbd_layout: de
+kbd_variant: de-nodeadkeys
+# kbd_variant: de
+
+timezone: Europe/Berlin
+
+hostname: dellnb1
+
+ssh_package: openssh
+
+users: 
+  - root
+  - carlo 
+  - nathalie

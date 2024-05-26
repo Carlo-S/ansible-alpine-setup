@@ -1,0 +1,55 @@
+#- name: Install python3-apt
+#  apt:
+#    name: python3-apt
+#    state: present
+#    update_cache: yes
+
+#- name: Install grub package
+#  apt:
+#    name: grub-legacy
+#    state: present
+#    update_cache: yes
+
+#- name: Install grub on boot sector
+#  shell:
+#    cmd: grub-install --recheck --root-directory=/mnt-system /dev/sda
+#  when: mnt_system_fstype == "reiserfs"
+
+#- name: Update repositories and install alsa package
+#  community.general.apk:
+#    name: alsa-utils alsaconf
+#    state: present
+
+- name: Install alsa-utils
+  ansible.builtin.package:
+    name: alsa-utils 
+    state: present
+
+- name: Install alsaconf
+  ansible.builtin.package:
+    name: alsaconf 
+    state: present
+
+- name: Add users with an ash shell, appending the group 'audio' to the user's groups
+  ansible.builtin.user:
+    name: "{{ item }}" 
+    shell: /bin/ash
+    groups: audio 
+    append: yes
+  loop: "{{ users }}"
+#  loop:
+#    - root
+#    - carlo
+#    - nathalie
+
+- name: Start service alsa, if not started
+  ansible.builtin.service:
+    name: alsa
+    state: started
+
+- name: Enable service alsa, and not touch the state
+  ansible.builtin.service:
+    name: alsa 
+    enabled: yes
+
+
