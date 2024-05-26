@@ -1,0 +1,17 @@
+---
+- name: Ensure networking is up if answer file is URL
+  include_role:
+    name: setup-interfaces
+  when: use_answer_file.startswith('http')
+
+- name: Download answer file if URL
+  get_url:
+    url: "{{ use_answer_file }}"
+    dest: /tmp/answerfile
+  when: use_answer_file.startswith('http')
+  register: download_result
+
+- name: Set use_answer_file to downloaded path
+  set_fact:
+    use_answer_file: /tmp/answerfile
+  when: download_result is defined

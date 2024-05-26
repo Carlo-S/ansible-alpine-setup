@@ -1,0 +1,5 @@
+---
+- name: Create answer file
+  template:
+    src: answerfile.j2
+    dest: "{{ create_answer_file }}"

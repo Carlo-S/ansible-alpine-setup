@@ -1,0 +1,10 @@
+- hosts: all
+  roles:
+    - role: setup-alpine
+      use_answer_file: "http://example.com/answerfile"
+      create_answer_file: "/root/answerfile"
+      empty_root_password: true
+      quick_mode: true
+      answer_file_options:
+        KEYMAPOPTS: "us us"
+        HOSTNAMEOPTS: "alpine"

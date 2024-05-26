@@ -1,0 +1,112 @@
+---
+- name: Check if running on KVM
+  shell: grep -q "kvm-clock" /sys/devices/system/clocksource/clocksource0/current_clocksource
+  register: kvm_clock
+  ignore_errors: true
+
+- name: Set colors for terminal output if interactive
+  set_fact:
+    colcyan: "\e[36m"
+    colwhite: "\e[97m"
+    colreset: "\e[0m"
+  when: ansible_is_interactive | bool
+
+- name: Print Heading 1
+  ansible.builtin.debug:
+    msg: "{{ colcyan }}{{ message }}{{ colreset }}"
+  vars:
+    message: "ALPINE LINUX INSTALL"
+
+- name: Print Heading 2
+  ansible.builtin.debug:
+    msg: "{{ colwhite }}{{ message }}{{ colreset }}"
+  vars:
+    message: "----------------------"
+
+- name: Handle answer file download
+  include_tasks: setup_networking.yml
+
+- name: Source the answer file
+  include_vars: "{{ use_answer_file }}"
+  when: use_answer_file != ""
+
+- name: Create answer file if requested
+  include_tasks: create_answer_file.yml
+  when: create_answer_file != ""
+
+- name: Setup keymap
+  include_role:
+    name: setup-keymap
+  when: keymapopts is defined
+
+- name: Setup hostname
+  include_role:
+    name: setup-hostname
+
+- name: Setup devd
+  include_role:
+    name: setup-devd
+
+- name: Setup interfaces
+  include_role:
+    name: setup-interfaces
+
+- name: Setup DNS if needed
+  include_role:
+    name: setup-dns
+  when: ansible_local.setup.interfaces_opts != "none" and ansible_local.setup.interfaces_opts is defined
+
+- name: Set root password
+  user:
+    name: root
+    password: ""
+  when: empty_root_password | bool
+
+- name: Setup timezone
+  include_role:
+    name: setup-timezone
+
+- name: Ensure necessary services are enabled
+  include_tasks: setup_misc.yml
+
+- name: Setup proxy
+  include_role:
+    name: setup-proxy
+  when: proxyopts is defined
+
+- name: Setup NTP
+  include_role:
+    name: setup-ntp
+  when: not kvm_clock.failed
+
+- name: Setup APK repositories
+  include_role:
+    name: setup-apkrepos
+
+- name: Setup user
+  include_role:
+    name: setup-user
+
+- name: Setup SSHD
+  include_role:
+    name: setup-sshd
+
+- name: Setup Xen Dom0
+  include_role:
+    name: setup-xen-dom0
+  when: ansible_virtualization_role == "guest" and ansible_virtualization_type == "xen"
+
+- name: Setup disk
+  include_role:
+    name: setup-disk
+
+- name: Setup LBU and APK cache
+  include_role:
+    name: setup-lbu
+
+- name: Setup APK cache
+  include_role:
+    name: setup-apkcache
+
+- name: Update /etc/hosts
+  include_tasks: update_hosts.yml

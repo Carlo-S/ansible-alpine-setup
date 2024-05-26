@@ -1,0 +1,17 @@
+---
+dependencies:
+  - role: setup-network
+  - role: setup-keymap
+  - role: setup-hostname
+  - role: setup-interfaces
+  - role: setup-dns
+  - role: setup-timezone
+  - role: setup-proxy
+  - role: setup-ntp
+  - role: setup-apkrepos
+  - role: setup-user
+  - role: setup-sshd
+  - role: setup-xen-dom0
+  - role: setup-disk
+  - role: setup-lbu
+  - role: setup-apkcache

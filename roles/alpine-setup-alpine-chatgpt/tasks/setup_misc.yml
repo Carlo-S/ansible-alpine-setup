@@ -1,0 +1,24 @@
+---
+- name: Ensure networking services are enabled
+  service:
+    name: networking
+    enabled: yes
+
+- name: Ensure seedrng or urandom is enabled
+  service:
+    name: "{{ item }}"
+    enabled: yes
+  with_items:
+    - seedrng
+    - urandom
+
+- name: Ensure cron services are enabled
+  service:
+    name: crond
+    enabled: yes
+
+- name: Ensure acpid is enabled if input event exists
+  service:
+    name: acpid
+    enabled: yes
+  when: ansible_devices | selectattr('device', 'match', '/dev/input/event') | list | length > 0

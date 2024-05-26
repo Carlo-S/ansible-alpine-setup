@@ -1,0 +1,17 @@
+---
+- name: Get current domain from resolv.conf
+  command: >
+    sh -c "sed -n -e '/^domain[[:space:]][[:space:]]*/{s///;s/\\([^[:space:]]*\\).*$/\\1/;h;}' -e '/^search[[:space:]][[:space:]]*/{s///;s/\\([^[:space:]]*\\).*$/\\1/;h;}' -e '${g;p;}' /etc/resolv.conf"
+  register: current_domain
+  ignore_errors: true
+
+- name: Get current hostname
+  command: hostname
+  register: current_hostname
+
+- name: Update /etc/hosts file
+  lineinfile:
+    path: /etc/hosts
+    regexp: "^127\\.0\\.0\\.1"
+    line: "127.0.0.1 {{ current_hostname.stdout.split('.')[0] }}.{{ current_domain.stdout | default('my.domain') }} {{ current_hostname.stdout.split('.')[0] }} localhost.localdomain localhost"
+    state: present
